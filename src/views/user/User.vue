@@ -3,9 +3,8 @@
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span>用户管理</span>
-        <el-input v-model="searchContent" style="width: 15%;margin-left: 1%" placeholder="请输入内容"></el-input>
-        <el-button @click="handleSearch(searchContent)" style="margin-left: 1%">检索</el-button>
-        <el-button style="float: right" @click="showInsertMemberDialog">添加新成员</el-button>
+        <el-input v-model="keyword" style="width: 15%;margin-left: 1%" placeholder="请输入内容"></el-input>
+        <el-button @click="search" style="margin-left: 1%">检索</el-button>
       </div>
       <div class="text item">
         <template>
@@ -13,8 +12,7 @@
             :data="memberData"
             style="width: 100%">
             <el-table-column
-              label="id"
-              width="40">
+              label="id">
               <template slot-scope="scope">
                 <span>{{ scope.row.id }}</span>
               </template>
@@ -26,28 +24,16 @@
               </template>
             </el-table-column>
             <el-table-column
-              label="昵称">
+                label="权限">
               <template slot-scope="scope">
-                <span>{{scope.row.nick}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="手机号">
-              <template slot-scope="scope">
-                <span>{{scope.row.mobile}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="邮箱">
-              <template slot-scope="scope">
-                <span>{{scope.row.email}}</span>
+                <span>{{scope.row.roles}}</span>
               </template>
             </el-table-column>
             <el-table-column label="操作">
               <template slot-scope="scope">
                 <el-button
                   size="mini"
-                  @click="showEditDialog(scope.$index, scope.row)">编辑</el-button>
+                  @click="updateToAdmin(scope.row)">修改权限</el-button>
                 <el-button
                   size="mini"
                   type="danger"
@@ -66,52 +52,6 @@
         </el-pagination>
       </div>
     </el-card>
-    <el-dialog title="修改成员信息" :visible.sync="editDialogFormVisible">
-      <el-form :model="editMember">
-        <el-form-item label="ID" >
-          <el-input  v-model="editMember.id" :disabled="true"></el-input>
-        </el-form-item>
-        <el-form-item label="姓名" >
-          <el-input  v-model="editMember.username"></el-input>
-        </el-form-item>
-        <el-form-item label="昵称" >
-          <el-input  v-model="editMember.nick"></el-input>
-        </el-form-item>
-        <el-form-item label="手机号" >
-          <el-input type="textarea" v-model="editMember.mobile"></el-input>
-        </el-form-item>
-        <el-form-item label="邮箱" >
-          <el-input type="textarea" v-model="editMember.email"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editMemberMe(editMember)">确 定</el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog title="添加成员" :visible.sync="addDialogFormVisible">
-      <el-form :model="addMember" ref="insertFormRef">
-        <el-form :model="addMember">
-          <el-form-item label="姓名" >
-            <el-input  v-model="addMember.username"></el-input>
-          </el-form-item>
-          <el-form-item label="昵称" >
-            <el-input  v-model="addMember.nick"></el-input>
-          </el-form-item>
-          <el-form-item label="手机号" >
-            <el-input type="textarea" v-model="addMember.mobile"></el-input>
-          </el-form-item>
-          <el-form-item label="邮箱" >
-            <el-input type="textarea" v-model="addMember.email"></el-input>
-          </el-form-item>
-        </el-form>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addMemberMe(addMember)">确 定</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -124,29 +64,16 @@ export default {
       searchContent: '',
       pageCnt: 0,
       memberData: [],
-      editMember: {
-        id: '', username: '', nick: '', mobile: '', email: ''
-      },
-      addMember: {
-        username: '', nick: '', mobile: '', email: ''
-      },
-      addDialogFormVisible: false,
-      editDialogFormVisible: false
+      keyword: ''
     }
   },
   created () {
     this.getMemberList()
   },
   methods: {
-    handleSearch (searchContent) {
-      this.getMemberList(searchContent)
-    },
-    showEditDialog (index, row) {
-      this.editDialogFormVisible = !this.editDialogFormVisible
-      this.editMember = row
-    },
+
     handleDelete (index, row) {
-      this.$http.delete('/user' + row.id).then(res => {
+      this.$http.delete('/user',row.id).then(res => {
         if (res.data.code === 200) {
           this.$message.success('删除成功')
           this.getMemberList()
@@ -155,57 +82,30 @@ export default {
         }
       })
     },
-    showInsertMemberDialog () {
-      this.addDialogFormVisible = !this.addDialogFormVisible
-    },
-    editMemberMe (editFormData) {
-      const param = JSON.stringify(editFormData)
-      this.$http.put('/user' + editFormData.id, param, { headers: { 'Content-Type': 'application/json' } }).then(res => {
-        if (res.data.code === 200) {
-          this.$message.success('修改成功')
-        } else {
-          this.$message.error('修改失败')
-        }
-      })
 
-      this.editDialogFormVisible = false
-    },
-    addMemberMe (addFormData) {
-      const param = JSON.stringify(addFormData)
-      this.$http.post('/user', param, { headers: { 'Content-Type': 'application/json' } }).then(res => {
-        if (res.data.code === 200) {
-          this.getMemberList()
-          this.$message.success('修改成功')
-        } else {
-          this.$message.error('修改失败')
-        }
-      })
-      this.addDialogFormVisible = false
-    },
-    handleCurrentPageChange (page) {
-      this.getMemberList('', page)
-    },
-    getMemberList (keyword = '', pageNum = 1) {
-      if (keyword === '') {
-        this.$http.get('/user').then(res => {
+    getMemberList (size = 10, page = 1) {
+        this.$http.get("/user?page=" + page + "&size=" + size).then(res => {
           console.log(res)
-          const {data,code} = res.data
-          if (code === 0) {
-            this.memberData = data
-          }
+          this.memberData = res.data.data
         })
-      } else {
-        this.$http.get('/user').then(res => {
-          const cbInfo = res.data.data
-          if (res.data.code === 200) {
-            const { list } = cbInfo
-            const { pageCnt } = cbInfo
-            this.memberData = list
-            this.pageCnt = pageCnt
-          }
-        })
-      }
     },
+
+    updateToAdmin(row){
+      console.log(row.id)
+      let id = row.id
+
+      this.$http.put("/user/"+id ).then(res => {
+        console.log(res)
+      })
+    },
+    search(e,size = 10,page = 1){
+      console.log(page)
+      this.$http.get("/user?page="+ page +"&size=" + size+"&keyword="+this.keyword).then(res =>{
+        console.log(res)
+        this.memberData = res.data.data
+      })
+    }
+
   }
 
 }

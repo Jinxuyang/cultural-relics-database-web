@@ -6,7 +6,8 @@ import './plugins/element.js'
 import axios from 'axios'
 import { Message } from 'element-ui'
 
-axios.defaults.baseURL = 'http://localhost:8000/'
+//axios.defaults.baseURL = 'http://39.106.212.112:8889/api/v1'
+axios.defaults.baseURL = 'http://localhost:8889/api/v1'
 axios.defaults.withCredentials = false
 
 Vue.prototype.$http = axios

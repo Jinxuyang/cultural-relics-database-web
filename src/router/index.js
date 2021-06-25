@@ -5,6 +5,7 @@ import Home from '../components/Home'
 import Register from '@/views/register/Register'
 import User from '@/views/user/User'
 import Table from "@/views/table/Table"
+import Detail from "@/views/detail/Detail";
 
 
 Vue.use(VueRouter)
@@ -19,7 +20,8 @@ const routes = [
     component: Home,
     children: [
       { path: '/user', name: 'User', component: User },
-      { path: '/table', name: 'Table', component: Table }
+      { path: '/table', name: 'Table', component: Table },
+      { path: '/detail', name: 'Detail', component: Detail },
     ]
   }
 ]

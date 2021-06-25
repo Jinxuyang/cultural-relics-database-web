@@ -1,16 +1,21 @@
 <template>
-  <div style="margin-right: 100px;margin-left: 100px">
-    <el-page-header @back="goBack" content="陶瓷文物数据库" style="margin-bottom: 25px">
-    </el-page-header>
+  <div>
     <div style="margin-bottom: 10px">
-      <el-input v-model="input" placeholder="请输入关键字" style="inline-size: auto;margin-right: 10px"></el-input>
-      <el-button>搜索</el-button>
-      <el-button @click="resetDateFilter">导出所选</el-button>
-      <el-button @click="clearFilter">导入文件</el-button>
+      <el-input v-model="keyword" placeholder="请输入关键字" style="inline-size: auto;margin-right: 10px"></el-input>
+      <el-button @click="search">搜索</el-button>
+      <el-button @click="export_">导出所选</el-button>
+      <el-upload
+          :action="uploadUrl"
+          style="margin-top: 10px"
+          :on-success="handleUpload">
+        <el-button>导入文件</el-button>
+      </el-upload>
     </div>
 
     <el-table
-      :data="data"
+      @row-click="openDetails"
+      ref="table"
+      :data="relicData"
       border
       style="width: 100%">
       <el-table-column
@@ -18,25 +23,28 @@
         width="35">
       </el-table-column>
       <el-table-column
-        fixed
-        prop="id"
-        label="编号">
+        prop="testNumber"
+        label="实验编号">
+      </el-table-column>
+      <el-table-column
+        prop="unearthNumber"
+        label="出土编号">
       </el-table-column>
       <el-table-column
         prop="name"
         label="名称">
       </el-table-column>
       <el-table-column
-        prop="place"
-        label="出土地点">
+        prop="age"
+        label="年代">
       </el-table-column>
       <el-table-column
-        fixed="right"
-        label="操作">
-        <template slot-scope="scope">
-          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-          <el-button type="text" size="small">导出</el-button>
-        </template>
+        prop="times"
+        label="时代">
+      </el-table-column>
+      <el-table-column
+        prop="unearthPlace"
+        label="出土地点">
       </el-table-column>
     </el-table>
     <el-pagination
@@ -53,20 +61,76 @@ export default {
   name: 'Table',
   data () {
     return {
-      data:[
-        {id:"90BKKM26",name:"玻璃珠残片",place:"新疆拜城克孜尔水库墓地"},
-        {id:"XJ05-1",name:"器皿残片",place:"新疆巴楚县吐木秀克遗址"},
-        {id:"XJ-9-1",name:"单色珠",place:"新疆策勒县达玛沟遗址"},
-        {id:"XJ05-3-4",name:"条纹折叠珠",place:"新疆民丰县尼雅遗址"},
-        {id:"XJ05-3-5 ",name:"束腰折叠珠",place:"新疆民丰县尼雅遗址"},
-        {id:"XJ-16-10 ",name:"条纹珠模仿马赛克",place:"新疆柯坪县穷梯木遗址"},
-        {id:"XJ-40-2 ",name:"马赛克眼珠",place:"新疆洛浦县达玛沟遗址"},
-        {id:"XZHM-06-08",name:"铜红珠\n",place:"广西合浦风门岭\n"},
-        {id:"XZHM-06-01",name:"六棱柱玻璃珠\n",place:"广西合浦寮尾\n"},
-        {id:"XZHM-06-06\n\n",name:"玻璃管\n",place:"江苏无锡鸿山越墓\n"},
-      ]
+      relicData: {
+        id:"",
+        testNumber: "",
+        unearthNumber: "",
+        age: "",
+        times: "",
+        unearthPlace: ""
+      },
+      keyword: "",
+      uploadUrl: this.$http.defaults.baseURL+"/doc"
     }
   },
+  created() {
+    this.getFormData()
+  },
+  methods :{
+    getFormData(page = 1,size = 10){
+      this.$http.get("/relic?page=" + page + "&size=" + size).then(res =>{
+        console.log(res)
+        const { status } = res.data
+        if (status === 'success'){
+          this.relicData = res.data.data
+        } else {
+          this.$message.error(res.data.data)
+        }
+      })
+    },
+
+    export_(){
+
+      if (this.$refs.table.selection.length <= 0){
+        this.$message.error("请勾选要导出数据");
+        return
+      }
+
+      let res = '';
+      for (let i = 0; i < this.$refs.table.selection.length; i++) {
+        if (i === 0 ){
+          res+=this.$refs.table.selection[i].id
+        } else {
+          res+=","+this.$refs.table.selection[i].id
+        }
+      }
+
+      window.open(this.$http.defaults.baseURL+"/doc?ids="+res)
+      this.$message.success("导出成功");
+      console.log(res)
+    },
+    handleUpload(response){
+      if (response.message === "fail") {
+        this.$message.error("导入失败请检查文件")
+      } else if (response.data === "ok"){
+        this.$message.success("导入成功")
+        this.getFormData()
+      }
+      console.log(response)
+    },
+    openDetails(row){
+      this.$router.push('/detail?id='+row.id)
+      console.log(row)
+    },
+    search(e,size = 10,page = 1){
+      console.log(page)
+      this.$http.get("/relic?page="+ page +"&size=" + size+"&keyword="+this.keyword).then(res =>{
+        console.log(res)
+        this.relicData = res.data.data
+      })
+    }
+  }
+
 }
 </script>
 

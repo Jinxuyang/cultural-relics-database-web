@@ -1,23 +1,28 @@
 <template>
-<div class="container" style="margin-top: 10%">
-  <div>
-    <h2 style="text-align: center">电力数据监控平台登录</h2>
+  <div class="site-wrapper site-page--login">
+    <div class="site-content__wrapper">
+      <div class="site-content">
+        <div class="brand-info">
+          <h2 class="brand-info__text">陶瓷文物科技数据库</h2>
+          <p class="brand-info__intro">陶瓷文物科技数据库基于vue、element-ui构建开发，使用MongoDB作为数据库。</p>
+        </div>
+        <div class="login-main">
+          <h3 class="login-title">管理员登录</h3>
+          <el-form :model="loginForm" ref="loginFormRef" @keyup.enter.native="login()" status-icon>
+            <el-form-item prop="userName">
+              <el-input v-model="loginForm.username" placeholder="帐号"></el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input v-model="loginForm.password" type="password" placeholder="密码"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button class="login-btn-submit" type="primary" @click="login()">登录</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+    </div>
   </div>
-  <div>
-    <el-form ref="loginFormRef" :model="loginForm" :rules="rules" label-width="80px" >
-      <el-form-item label="用户名" prop="username">
-        <el-input v-model="loginForm.username" placeholder="请输入用户名" type="text"></el-input>
-      </el-form-item>
-      <el-form-item label="密码" prop="password">
-        <el-input v-model="loginForm.password" placeholder="请输入密码" type="password"></el-input>
-      </el-form-item>
-      <el-form-item >
-        <el-button type="primary" @click="login" >提交</el-button>
-        <el-button type="primary" @click="pushTo" >注册</el-button>
-      </el-form-item>
-    </el-form>
-  </div>
-</div>
 </template>
 
 <script>
@@ -55,31 +60,101 @@ export default {
     },
     login () {
        this.$refs.loginFormRef.validate(valid => {
-         this.$message.success('登陆成功')
-         this.$router.push('/dashboard')
+
         if (!valid) return
         const data = this.transformRequest(this.loginForm)
-        this.$http.post('/login', data).then(res => {
-          const { code } = res.data
-          if (code === 0) {
-
+        this.$http.post('/user/login', data).then(res => {
+          const { status } = res.data
+          console.log(res)
+          if (status === "success") {
+            this.$message.success('登陆成功')
+            this.$router.push('/table')
           } else {
-            this.$message.error('登陆失败')
+            const { data } = res.data
+            this.$message.error('登陆失败,'+data)
           }
         })
       })
     },
-    pushTo(){
-      this.$router.push('/register')
-    }
   }
 }
 </script>
 
-<style scoped>
-.container{
-  margin-left: 30%;
-  margin-right: 30%;
+<style scoped lang="scss">
+.site-wrapper.site-page--login {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(38, 50, 56, .6);
+  overflow: hidden;
+&:before {
+   position: fixed;
+   top: 0;
+   left: 0;
+   z-index: -1;
+   width: 100%;
+   height: 100%;
+   content: "";
+   background-image: url(~@/assets/bg.png);
+   background-size: cover;
+ }
+.site-content__wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 0;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: transparent;
+}
+.site-content {
+  min-height: 100%;
+  padding: 30px 500px 30px 30px;
+}
+.brand-info {
+  margin: 220px 100px 0 90px;
+  color: #fff;
+}
+.brand-info__text {
+  margin:  0 0 22px 0;
+  font-size: 48px;
+  font-weight: 400;
+  text-transform : uppercase;
+}
+.brand-info__intro {
+  margin: 10px 0;
+  font-size: 16px;
+  line-height: 1.58;
+  opacity: .6;
+}
+.login-main {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 150px 60px 180px;
+  width: 470px;
+  min-height: 100%;
+  background-color: #fff;
+}
+.login-title {
+  font-size: 16px;
+}
+.login-captcha {
+  overflow: hidden;
+> img {
+  width: 100%;
+  cursor: pointer;
+}
+}
+.login-btn-submit {
+  width: 100%;
+  margin-top: 38px;
+}
 }
 
 </style>
