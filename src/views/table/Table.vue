@@ -48,10 +48,12 @@
       </el-table-column>
     </el-table>
     <el-pagination
+      @current-change="handlePageChange"
       style="margin-top: 10px"
       background
       layout="prev, pager, next"
-      :total="30">
+      :total="total"
+      page-size=10>
     </el-pagination>
   </div>
 </template>
@@ -68,9 +70,11 @@ export default {
         age: "",
         times: "",
         unearthPlace: ""
+
       },
       keyword: "",
-      uploadUrl: this.$http.defaults.baseURL+"/doc"
+      uploadUrl: this.$http.defaults.baseURL+"/doc",
+      total: 0
     }
   },
   created() {
@@ -82,7 +86,8 @@ export default {
         console.log(res)
         const { status } = res.data
         if (status === 'success'){
-          this.relicData = res.data.data
+          this.relicData = res.data.data.list
+          this.total = res.data.data.total
         } else {
           this.$message.error(res.data.data)
         }
@@ -126,8 +131,13 @@ export default {
       console.log(page)
       this.$http.get("/relic?page="+ page +"&size=" + size+"&keyword="+this.keyword).then(res =>{
         console.log(res)
-        this.relicData = res.data.data
+        this.relicData = res.data.data.list
+        this.total = res.data.data.total
       })
+    },
+    handlePageChange(page){
+      console.log(page)
+      this.getFormData(page,10);
     }
   }
 

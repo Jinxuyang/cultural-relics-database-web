@@ -45,10 +45,12 @@
       </div>
       <div class="block">
         <el-pagination
-          background
-          layout="prev, pager, next"
-          :page-count="pageCnt"
-          @current-change="handleCurrentPageChange">
+            @current-change="handlePageChange"
+            style="margin-top: 10px"
+            background
+            layout="prev, pager, next"
+            :total="total"
+            page-size=10>
         </el-pagination>
       </div>
     </el-card>
@@ -64,7 +66,8 @@ export default {
       searchContent: '',
       pageCnt: 0,
       memberData: [],
-      keyword: ''
+      keyword: '',
+      total: 0
     }
   },
   created () {
@@ -86,7 +89,8 @@ export default {
     getMemberList (size = 10, page = 1) {
         this.$http.get("/user?page=" + page + "&size=" + size).then(res => {
           console.log(res)
-          this.memberData = res.data.data
+          this.memberData = res.data.data.list
+          this.total = res.data.data.total
         })
     },
 
@@ -102,8 +106,13 @@ export default {
       console.log(page)
       this.$http.get("/user?page="+ page +"&size=" + size+"&keyword="+this.keyword).then(res =>{
         console.log(res)
-        this.memberData = res.data.data
+        this.memberData = res.data.data.list
+        this.total = res.data.data.total
       })
+    },
+    handlePageChange(page){
+      console.log(page)
+      this.getMemberList(10,page);
     }
 
   }
