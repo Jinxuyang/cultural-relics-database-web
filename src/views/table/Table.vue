@@ -23,28 +23,28 @@
         width="35">
       </el-table-column>
       <el-table-column
-        prop="testNumber"
-        label="实验编号">
+        prop="id"
+        label="文物编号">
       </el-table-column>
       <el-table-column
-        prop="unearthNumber"
-        label="出土编号">
+        prop="essentialInformation.culturalClassification"
+        label="文物分类">
       </el-table-column>
       <el-table-column
-        prop="name"
-        label="名称">
+        prop="essentialInformation.kiln"
+        label="窑">
       </el-table-column>
       <el-table-column
-        prop="age"
+        prop="essentialInformation.burningAge"
         label="年代">
       </el-table-column>
       <el-table-column
-        prop="times"
-        label="时代">
+        prop="essentialInformation.sampleProvider"
+        label="样品提供单位">
       </el-table-column>
       <el-table-column
-        prop="unearthPlace"
-        label="出土地点">
+        prop="essentialInformation.storagePlace"
+        label="存储地点">
       </el-table-column>
     </el-table>
     <el-pagination
@@ -65,12 +65,16 @@ export default {
     return {
       relicData: {
         id:"",
-        testNumber: "",
-        unearthNumber: "",
-        age: "",
-        times: "",
-        unearthPlace: ""
-
+        essentialInformation: {
+          Name:"",
+          culturalClassification: "",
+          burningAge: "",
+          kiln: "",
+          sampleProvider: "",
+          storagePlace: "",
+          storageLocation: "",
+          collectionLocation: ""
+        }
       },
       keyword: "",
       uploadUrl: this.$http.defaults.baseURL+"/doc",
